@@ -43,13 +43,18 @@ document.addEventListener('DOMContentLoaded', async () => {
             text = bracketMatch[0];
           }
         }
-        text = text.trim();
-        try {
-          const parsed = JSON.parse(text);
-          const allIds = tabs.map(t => t.id);
-          const orderedIds = [];
-          let valid = Array.isArray(parsed);
-          if (valid) {
+          text = text.trim();
+          try {
+            let parsed = JSON.parse(text);
+            if (Array.isArray(parsed)) {
+              parsed = parsed.map(item =>
+                typeof item === 'string' ? JSON.parse(item) : item
+              );
+            }
+            const allIds = tabs.map(t => t.id);
+            const orderedIds = [];
+            let valid = Array.isArray(parsed);
+            if (valid) {
             for (const grp of parsed) {
               if (!grp || !Array.isArray(grp.tabs)) {
                 valid = false;
