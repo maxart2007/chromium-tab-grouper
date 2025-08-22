@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "Chromium Tab Grouper",
+  "version": "0.1.0",
+  "description": "Groups tabs based on AI suggestions.",
+  "permissions": ["tabs", "tabGroups", "storage"],
+  "action": {
+    "default_title": "Group tabs"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "options_page": "options.html"
+}
