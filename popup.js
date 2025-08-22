@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', async () => {
-  const tabs = await chrome.tabs.query({ currentWindow: true });
+  const tabs = (await chrome.tabs.query({ currentWindow: true })).filter(t => !t.pinned);
   const tabInfo = tabs.map(t => ({ id: t.id, title: t.title, url: t.url }));
   const pre = document.getElementById('tab-json');
   pre.textContent = JSON.stringify(tabInfo, null, 2);
@@ -89,7 +89,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             await chrome.tabGroups.update(groupId, { title: grp.title || '' });
           }
         } catch (e) {
-          pre.textContent = text;
+          console.error(e);
+          pre.textContent = 'Ошибка при группировке вкладок: ' + (e.message || '');
         }
       } else {
         pre.textContent = data.error?.message || 'No response from AI.';
