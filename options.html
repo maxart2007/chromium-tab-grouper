@@ -3,19 +3,27 @@
 <head>
   <meta charset="utf-8">
   <title>Tab Grouper Settings</title>
+  <link rel="stylesheet" href="options.css">
 </head>
 <body>
-  <h1>Settings</h1>
-  <label>
-    Gemini API Key:
-    <input type="text" id="apiKey" />
-  </label>
-  <label>
-    Context:
-    <textarea id="context"></textarea>
-  </label>
-  <button id="save">Save</button>
-  <div id="status"></div>
+  <div class="container">
+    <h1>Settings</h1>
+
+    <div class="field">
+      <label for="apiKey">Gemini API Key</label>
+      <input type="text" id="apiKey" placeholder="Enter your Gemini API key">
+      <p class="explainer">Used to fetch grouping suggestions from Gemini.</p>
+    </div>
+
+    <div class="field">
+      <label for="context">Context</label>
+      <textarea id="context" placeholder="Optional context for grouping"></textarea>
+      <p class="explainer">Provide additional instructions sent with each grouping request.</p>
+    </div>
+
+    <button id="save">Save</button>
+    <div id="status"></div>
+  </div>
   <script src="options.js"></script>
 </body>
 </html>
