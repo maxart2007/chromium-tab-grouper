@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
     const task = `Твоя задача ознакомиться со списком вкладок в формате JSON и предложить свою сортировку исходя из контекста, который предоставит пользователь. Вернуть ты должен такой же JSON, как исходный, но с нужным порядком вкладок и группировкой. Названия групп должны быть максимально короткие и желательно односложные. Контекст от пользователя: ${context || ''}`;
+
     const body = {
       contents: [
         {
@@ -22,19 +23,25 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
       ]
     };
+
+    const model = 'gemini-2.5-flash';
     try {
-      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`, {
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
       });
       const data = await res.json();
-      const text = data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response from AI.';
-      try {
-        const parsed = JSON.parse(text);
-        pre.textContent = JSON.stringify(parsed, null, 2);
-      } catch (e) {
-        pre.textContent = text;
+      if (res.ok && data.candidates?.length) {
+        const text = data.candidates[0].content.parts.map(p => p.text || '').join('');
+        try {
+          const parsed = JSON.parse(text);
+          pre.textContent = JSON.stringify(parsed, null, 2);
+        } catch (e) {
+          pre.textContent = text;
+        }
+      } else {
+        pre.textContent = data.error?.message || 'No response from AI.';
       }
     } catch (e) {
       pre.textContent = 'Error contacting AI.';
