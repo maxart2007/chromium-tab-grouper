@@ -4,7 +4,7 @@ A starter Chromium extension that will group browser tabs using AI suggestions.
 
 ## Features
 
-- Browser action button groups the two rightmost tabs into a test group titled "Test".
+- Browser action button groups the two rightmost tabs into a test group titled "Test" and shows a popup listing all open tabs as JSON with their IDs and titles.
 - Options page allows storing a Gemini API key for future AI integration.
 
 ## Development

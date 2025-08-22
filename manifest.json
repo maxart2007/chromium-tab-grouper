@@ -5,10 +5,8 @@
   "description": "Groups tabs based on AI suggestions.",
   "permissions": ["tabs", "tabGroups", "storage"],
   "action": {
-    "default_title": "Group tabs"
-  },
-  "background": {
-    "service_worker": "background.js"
+    "default_title": "Group tabs",
+    "default_popup": "popup.html"
   },
   "options_page": "options.html"
 }
