@@ -33,31 +33,40 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
       const data = await res.json();
       if (res.ok && data.candidates?.length) {
-        const text = data.candidates[0].content.parts.map(p => p.text || '').join('');
+        let text = data.candidates[0].content.parts.map(p => p.text || '').join('');
+        const fenceMatch = text.match(/```(?:json)?([\s\S]*?)```/i);
+        if (fenceMatch) {
+          text = fenceMatch[1];
+        } else {
+          const bracketMatch = text.match(/\[[\s\S]*\]/);
+          if (bracketMatch) {
+            text = bracketMatch[0];
+          }
+        }
+        text = text.trim();
         try {
           const parsed = JSON.parse(text);
           const allIds = tabs.map(t => t.id);
-          const seen = new Set();
-          let valid = Array.isArray(parsed);
           const orderedIds = [];
+          let valid = Array.isArray(parsed);
           if (valid) {
             for (const grp of parsed) {
-              if (typeof grp !== 'object' || typeof grp.title !== 'string' || !Array.isArray(grp.tabs)) {
+              if (!grp || !Array.isArray(grp.tabs)) {
                 valid = false;
                 break;
               }
               for (const id of grp.tabs) {
-                if (typeof id !== 'number' || !allIds.includes(id) || seen.has(id)) {
+                if (typeof id !== 'number') {
                   valid = false;
                   break;
                 }
-                seen.add(id);
                 orderedIds.push(id);
               }
               if (!valid) break;
             }
           }
-          if (!valid || seen.size !== allIds.length) {
+          const seen = new Set(orderedIds);
+          if (!valid || seen.size !== allIds.length || !allIds.every(id => seen.has(id))) {
             pre.textContent = 'Некорректный ответ от ИИ. \n'+text;
             return;
           }
@@ -70,7 +79,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           }
           for (const grp of parsed) {
             const groupId = await chrome.tabs.group({ tabIds: grp.tabs });
-            await chrome.tabGroups.update(groupId, { title: grp.title });
+            await chrome.tabGroups.update(groupId, { title: grp.title || '' });
           }
         } catch (e) {
           pre.textContent = text;
