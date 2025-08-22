@@ -22,7 +22,7 @@ async function groupTabs() {
   const { apiKey, context } = await chrome.storage.sync.get(['apiKey', 'context']);
   if (!apiKey) {
     console.error('API key not set.');
-    return;
+    return false;
   }
 
   const { tabs, tabInfo } = await saveCurrentOrder();
@@ -95,7 +95,7 @@ async function groupTabs() {
         const seen = new Set(orderedIds);
         if (!valid || seen.size !== allIds.length || !allIds.every(id => seen.has(id))) {
           console.error('Invalid response from AI.', text);
-          return;
+          return false;
         }
 
         await chrome.tabs.ungroup(allIds);
@@ -106,15 +106,21 @@ async function groupTabs() {
           const groupId = await chrome.tabs.group({ tabIds: grp.tabs });
           await chrome.tabGroups.update(groupId, { title: grp.title || '' });
         }
+        return true;
       } catch (e) {
         console.error('Error parsing AI response', e);
+        return false;
       }
     } else {
       console.error(data.error?.message || 'No response from AI.');
+      return false;
     }
   } catch (e) {
     console.error('Error contacting AI.', e);
+    return false;
   }
+
+  return false;
 }
 
 async function restoreTabs() {
@@ -163,5 +169,14 @@ chrome.contextMenus.onClicked.addListener((info) => {
     groupTabs();
   } else if (info.menuItemId === 'restore-tabs') {
     restoreTabs();
+  }
+});
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message?.type === 'groupTabs') {
+    groupTabs()
+      .then(ok => sendResponse({ status: ok ? 'success' : 'error' }))
+      .catch(() => sendResponse({ status: 'error' }));
+    return true;
   }
 });
