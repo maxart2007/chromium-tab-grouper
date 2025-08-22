@@ -36,7 +36,42 @@ document.addEventListener('DOMContentLoaded', async () => {
         const text = data.candidates[0].content.parts.map(p => p.text || '').join('');
         try {
           const parsed = JSON.parse(text);
+          const allIds = tabs.map(t => t.id);
+          const seen = new Set();
+          let valid = Array.isArray(parsed);
+          const orderedIds = [];
+          if (valid) {
+            for (const grp of parsed) {
+              if (typeof grp !== 'object' || typeof grp.title !== 'string' || !Array.isArray(grp.tabs)) {
+                valid = false;
+                break;
+              }
+              for (const id of grp.tabs) {
+                if (typeof id !== 'number' || !allIds.includes(id) || seen.has(id)) {
+                  valid = false;
+                  break;
+                }
+                seen.add(id);
+                orderedIds.push(id);
+              }
+              if (!valid) break;
+            }
+          }
+          if (!valid || seen.size !== allIds.length) {
+            pre.textContent = 'Некорректный ответ от ИИ.';
+            return;
+          }
+
           pre.textContent = JSON.stringify(parsed, null, 2);
+
+          await chrome.tabs.ungroup(allIds);
+          for (let i = 0; i < orderedIds.length; i++) {
+            await chrome.tabs.move(orderedIds[i], { index: i });
+          }
+          for (const grp of parsed) {
+            const groupId = await chrome.tabs.group({ tabIds: grp.tabs });
+            await chrome.tabGroups.update(groupId, { title: grp.title });
+          }
         } catch (e) {
           pre.textContent = text;
         }
