@@ -58,7 +58,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
           }
           if (!valid || seen.size !== allIds.length) {
-            pre.textContent = 'Некорректный ответ от ИИ.';
+            pre.textContent = 'Некорректный ответ от ИИ. \n'+text;
             return;
           }
 
