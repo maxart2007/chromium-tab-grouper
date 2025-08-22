@@ -50,26 +50,28 @@ document.addEventListener('DOMContentLoaded', async () => {
               parsed = parsed.map(item =>
                 typeof item === 'string' ? JSON.parse(item) : item
               );
+            } else if (parsed && typeof parsed === 'object') {
+              parsed = Object.entries(parsed).map(([title, tabs]) => ({ title, tabs }));
             }
             const allIds = tabs.map(t => t.id);
             const orderedIds = [];
             let valid = Array.isArray(parsed);
             if (valid) {
-            for (const grp of parsed) {
-              if (!grp || !Array.isArray(grp.tabs)) {
-                valid = false;
-                break;
-              }
-              for (const id of grp.tabs) {
-                if (typeof id !== 'number') {
+              for (const grp of parsed) {
+                if (!grp || !Array.isArray(grp.tabs)) {
                   valid = false;
                   break;
                 }
-                orderedIds.push(id);
+                for (const id of grp.tabs) {
+                  if (typeof id !== 'number') {
+                    valid = false;
+                    break;
+                  }
+                  orderedIds.push(id);
+                }
+                if (!valid) break;
               }
-              if (!valid) break;
             }
-          }
           const seen = new Set(orderedIds);
           if (!valid || seen.size !== allIds.length || !allIds.every(id => seen.has(id))) {
             pre.textContent = 'Некорректный ответ от ИИ. \n'+text;
